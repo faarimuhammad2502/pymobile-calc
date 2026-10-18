@@ -36,7 +36,7 @@ jobs:
           pip install -r requirements.txt
 
       - name: 🚀 Build APK dengan Flet
-        run: flet build apk
+        run: yes | flet build apk
 
       - name: 📤 Upload Hasil APK
         uses: actions/upload-artifact@v4
