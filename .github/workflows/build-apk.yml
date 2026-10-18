@@ -37,3 +37,9 @@ jobs:
 
       - name: 🚀 Build APK dengan Flet
         run: yes | flet build apk .
+
+      - name: 📤 Upload Hasil APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: PyMobile-Calc-APK
+          path: build/apk/*.apk
