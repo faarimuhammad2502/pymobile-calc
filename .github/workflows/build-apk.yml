@@ -36,4 +36,4 @@ jobs:
           pip install flet==0.23.2
 
       - name: 🚀 Build APK dengan Flet
-        run: yes | flet build apk main.py --app-name "CALCULATE"
+        run: yes | flet build apk main.py

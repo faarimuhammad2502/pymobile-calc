@@ -20,10 +20,11 @@ from app.ui import CalculatorUI
 def main(page: ft.Page):
     """
     Fungsi utama yang dipanggil oleh Flet runtime.
-    
-    Analogi Web:
-    'page' setara dengan objek 'window' atau 'document.body' di browser.
+    ...
     """
+    page.title = "CALCULATE"
+    
+    # ... kode selanjutnya ...
     # -------------------------------------------------------------------------
     # 1. KONFIGURASI HALAMAN MOBILE (CSS Root & Viewport)
     # -------------------------------------------------------------------------
