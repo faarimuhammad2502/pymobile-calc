@@ -1,25 +1,31 @@
 import flet as ft
-import traceback # <--- Tambahkan ini untuk membaca error
+import traceback
 
-# (Import Anda yang lain seperti app.logic dan app.ui biarkan saja di sini)
+# PERANGKAP UTAMA: Kita tangkap error dari sejak file dimuat!
+try:
+    # Pindahkan import file Anda ke dalam sini
+    from app.logic import CalculatorLogic
+    from app.ui import CalculatorUI
 
-def main(page: ft.Page):
-    try:
+    def main(page: ft.Page):
         page.title = "CALCULATE"
         
-        # --- PINDAHKAN SELURUH KODE ASLI ANDA KE SINI ---
-        # (Pastikan spasinya menjorok ke dalam agar masuk ke blok try)
-        # 
-        # Contoh:
-        # exp, res = calc_logic.get_display()
-        # calc_ui.update_display(exp, res)
-        # page.update()
+        # --- MASUKKAN KODE KALKULATOR ASLI ANDA DI BAWAH SINI ---
+        # (Pastikan spasinya menjorok ke dalam sejajar dengan tulisan ini)
         
-    except Exception as e:
-        # Jika aplikasi crash, layarnya tidak akan hitam, 
-        # melainkan menampilkan tulisan merah berisi penyebab error-nya:
+        
+        
+        # --------------------------------------------------------
+        page.update()
+
+except Exception as e:
+    # Jika error terjadi saat import atau di luar fungsi main, 
+    # tangkap dan buat fungsi main darurat untuk menampilkannya:
+    error_trace = traceback.format_exc()
+    
+    def main(page: ft.Page):
         page.scroll = "auto"
-        page.add(ft.Text(f"Telah Terjadi Error:\n\n{traceback.format_exc()}", color="red"))
+        page.add(ft.Text(f"Error Fatal di Awal Aplikasi:\n\n{error_trace}", color="red"))
         page.update()
 
 if __name__ == "__main__":
