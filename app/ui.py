@@ -120,8 +120,7 @@ class CalculatorUI:
         # Konten teks atau ikon
         content = ft.Text(label, size=22, weight=ft.FontWeight.W_600, color=text_color)
         if icon == "backspace":
-            content = ft.Icon(name=ft.Icons.BACKSPACE_OUTLINED, color=text_color, size=22)
-
+           content = ft.Icon(name=ft.icons.BACKSPACE_OUTLINED, color=text_color, size=22)
         # Event handler tombol
         def handle_click(e):
             # Memicu callback ke controller di main.py
