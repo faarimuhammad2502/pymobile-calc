@@ -1,0 +1,2 @@
+# Library Flet untuk pembuatan aplikasi mobile cross-platform berbasis Python
+flet==0.23.2
