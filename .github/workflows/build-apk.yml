@@ -1,7 +1,5 @@
 name: Build Android APK
 
-# Trigger build otomatis saat Anda push ke branch main, 
-# atau bisa dijalankan manual dari tab Actions di GitHub.
 on:
   push:
     branches: [ "main", "master" ]
@@ -25,8 +23,7 @@ jobs:
       - name: 📱 Setup Flutter SDK
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.24.3'
-
+          channel: 'stable'
 
       - name: 🐍 Setup Python
         uses: actions/setup-python@v5
