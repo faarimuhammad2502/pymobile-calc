@@ -101,6 +101,4 @@ def main(page: ft.Page):
 
 if __name__ == "__main__":
     # Menjalankan aplikasi kalkulator
-    # Analogi Web: ReactDOM.createRoot(root).render(<App />)
-    if __name__ == "__main__":
     ft.app(target=main)
