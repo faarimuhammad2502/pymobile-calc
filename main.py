@@ -1,14 +1,30 @@
 import flet as ft
+import traceback
 
-def main(page: ft.Page):
-    page.title = "CALCULATE"
-    page.vertical_alignment = ft.MainAxisAlignment.CENTER
-    page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
+try:
+    # Mengambil komponen kalkulator Anda
+    from app.logic import CalculatorLogic
+    from app.ui import CalculatorUI
+
+    def main(page: ft.Page):
+        page.title = "CALCULATE"
+        
+        # Mengaktifkan logika dan tampilan kalkulator
+        calc_logic = CalculatorLogic()
+        calc_ui = CalculatorUI(page, calc_logic)
+        
+        # Memasukkan kalkulator ke layar HP
+        page.add(calc_ui)
+        page.update()
+
+except Exception as e:
+    # Perangkap error: Munculkan teks merah jika gagal
+    error_trace = traceback.format_exc()
     
-    page.add(
-        ft.Text("TES BERHASIL!", size=30, color="green", weight=ft.FontWeight.BOLD),
-        ft.Text("Mesin Flet berjalan normal di HP ini.", size=15)
-    )
+    def main(page: ft.Page):
+        page.scroll = "auto"
+        page.add(ft.Text(f"Error Fatal di Awal Aplikasi:\n\n{error_trace}", color="red"))
+        page.update()
 
 if __name__ == "__main__":
     ft.app(target=main)
