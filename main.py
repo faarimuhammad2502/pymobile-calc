@@ -1,88 +1,106 @@
 """
 =============================================================================
 BERKAS: main.py
+PERAN  : Entry Point & Controller
+ANALOGI WEB:
+- main.py bertindak seperti index.js / App.tsx di React:
+  1. Inisialisasi root DOM (page)
+  2. Buat instance state/service (CalculatorLogic)
+  3. Buat instance tampilan (CalculatorUI)
+  4. Hubungkan event tombol ke logika (Event Binding)
+  5. Panggil page.update() untuk memicu re-render (mirip React setState)
 =============================================================================
 """
+
 import flet as ft
-import math
+from app.logic import CalculatorLogic
 from app.ui import CalculatorUI
 
+
 def main(page: ft.Page):
-    page.title = "PyMobile Calc"
-    page.theme_mode = ft.ThemeMode.DARK
-    page.bgcolor = "#0B0F19"
-    page.padding = 16
+    """
+    Fungsi utama yang dipanggil oleh Flet runtime.
+    
+    Analogi Web:
+    'page' setara dengan objek 'window' atau 'document.body' di browser.
+    """
+    # -------------------------------------------------------------------------
+    # 1. KONFIGURASI HALAMAN MOBILE (CSS Root & Viewport)
+    # -------------------------------------------------------------------------
+    page.title = "PyMobile Calc - Cross-Platform Flet"
+    page.theme_mode = ft.ThemeMode.DARK  # CSS: color-scheme: dark
+    page.bgcolor = "#0B0F19"             # CSS: body { background: #0B0F19; }
+    page.padding = 16                    # CSS: body { padding: 16px; }
+
+    # Konfigurasi ukuran jendela pengujian (Rasio layar smartphone)
     page.window.width = 412
     page.window.height = 780
+    page.window.resizable = True
 
-    state = {"expression": "", "is_evaluated": False}
+    # -------------------------------------------------------------------------
+    # 2. INISIALISASI LOGIKA DAN ANTARMUKA (MVC Binding)
+    # -------------------------------------------------------------------------
+    # Inisialisasi Mesin Logika (Model)
+    calc_logic = CalculatorLogic()
 
-    def handle_button_press(label: str):
-        if label == "C":
-            state["expression"] = ""
-            calc_ui.update_display("", "0")
-        elif label == "DEL":
-            if not state["is_evaluated"]:
-                state["expression"] = state["expression"][:-1]
-                calc_ui.update_display("", state["expression"] or "0")
-        elif label == "=":
-            if not state["expression"]: return
-            expr = state["expression"]
-            
-            py_expr = expr.replace("×", "*").replace("÷", "/").replace("^", "**")
-            py_expr = py_expr.replace("π", str(math.pi))
-            py_expr = py_expr.replace("sin(", "math.sin(math.radians(")
-            py_expr = py_expr.replace("cos(", "math.cos(math.radians(")
-            py_expr = py_expr.replace("tan(", "math.tan(math.radians(")
-            py_expr = py_expr.replace("log(", "math.log10(")
-            py_expr = py_expr.replace("√(", "math.sqrt(")
-            
-            py_expr += ")" * (py_expr.count("(") - py_expr.count(")"))
+    def handle_button_press(button_label: str):
+        """
+        EVENT DISPATCHER (Controller Action):
+        Fungsi ini dipanggil oleh UI setiap kali sebuah tombol disentuh.
+        
+        Analogi Web:
+        Mirip dengan event dispatcher:
+        function onAction(action) {
+          switch(action) { case 'C': logic.clear(); ... }
+          render();
+        }
+        """
+        if button_label == "C":
+            calc_logic.clear()
+        elif button_label == "DEL":
+            calc_logic.delete_backspace()
+        elif button_label == "=":
+            calc_logic.calculate()
+        elif button_label == "+/-":
+            calc_logic.toggle_negate()
+        elif button_label == "%":
+            calc_logic.percent()
+        elif button_label in ["+", "-", "×", "÷"]:
+            calc_logic.add_operator(button_label)
+        elif button_label == ".":
+            calc_logic.add_decimal()
+        elif button_label.isdigit():
+            calc_logic.add_digit(button_label)
 
-            try:
-                # Perbaikan Otak Mesin: Menyuntikkan library 'math' agar sin, cos, dll dikenali
-                res = eval(py_expr, {"__builtins__": {}, "math": math})
-                
-                if isinstance(res, float):
-                    res = int(res) if res.is_integer() else round(res, 8)
-                
-                res_str = str(res)
-                calc_ui.update_display(expr + " =", res_str)
-                calc_ui.add_history_item(expr, res_str)
-                
-                state["expression"] = res_str
-                state["is_evaluated"] = True
-            except Exception:
-                calc_ui.update_display(expr, "Error")
-                state["expression"] = ""
-        elif label == "+/-":
-            if state["expression"].startswith("-"):
-                state["expression"] = state["expression"][1:]
-            else:
-                state["expression"] = "-" + state["expression"]
-            calc_ui.update_display("", state["expression"] or "0")
-        elif label == "%":
-            try:
-                res = str(float(state["expression"]) / 100)
-                state["expression"] = res
-                calc_ui.update_display("", res)
-            except: pass
-        elif label in ["sin", "cos", "tan", "log", "√"]:
-            if state["is_evaluated"]: state["expression"] = ""
-            state["expression"] += f"{label}("
-            state["is_evaluated"] = False
-            calc_ui.update_display("", state["expression"])
-        else:
-            if state["is_evaluated"] and label.isdigit():
-                state["expression"] = ""
-            state["is_evaluated"] = False
-            state["expression"] += label
-            calc_ui.update_display("", state["expression"])
-            
+        # Ambil nilai terbaru dari logika dan perbarui tampilan UI
+        exp, res = calc_logic.get_display()
+        calc_ui.update_display(exp, res)
+
+        # Analogi Web: Pemicu re-render DOM (seperti React setState / dispatch)
         page.update()
 
+    # Inisialisasi Komponen Antarmuka (View) dengan meneruskan handler di atas
     calc_ui = CalculatorUI(on_button_press=handle_button_press)
-    page.add(ft.Container(content=calc_ui.build_view(), alignment=ft.alignment.center))
+
+    # -------------------------------------------------------------------------
+    # 3. MOUNTING KOMPONEN KE DOM (DOM Attachment)
+    # -------------------------------------------------------------------------
+    # Analogi Web: document.body.appendChild(calc_ui.build_view())
+    page.add(
+        ft.Container(
+            content=calc_ui.build_view(),
+            alignment=ft.alignment.center,
+        )
+    )
+
+    # Render awal layar
+    exp, res = calc_logic.get_display()
+    calc_ui.update_display(exp, res)
+    page.update()
+
 
 if __name__ == "__main__":
+    # Menjalankan aplikasi kalkulator
+    # Analogi Web: ReactDOM.createRoot(root).render(<App />)
+    if __name__ == "__main__":
     ft.app(target=main)
