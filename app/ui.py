@@ -7,6 +7,7 @@ class CalculatorUI:
         self.on_convert = on_convert
         self.on_clear_history = on_clear_history
         self.history_cache = []
+        self.tab_contents = {}
         
         # Peta Kategori & Satuan Konversi
         self.units_map = {
@@ -43,7 +44,10 @@ class CalculatorUI:
             height=130,
         )
 
-        # Dropdowns Konverter
+        # Container Riwayat
+        self.history_list = ft.ListView(expand=True, spacing=8, padding=4)
+
+    def _init_converter_components(self):
         self.category_dd = ft.Dropdown(
             options=[ft.dropdown.Option(k) for k in self.units_map.keys()],
             value="Panjang",
@@ -72,9 +76,6 @@ class CalculatorUI:
         )
         self.convert_result_text = ft.Text(value="Hasil: -", size=18, weight=ft.FontWeight.BOLD, color="#F59E0B")
 
-        # Container Riwayat
-        self.history_list = ft.ListView(expand=True, spacing=8, padding=4)
-
     def _on_category_change(self, e):
         cat = self.category_dd.value
         units = self.units_map.get(cat, [])
@@ -87,8 +88,8 @@ class CalculatorUI:
             self.from_unit_dd.value = units[0]
             self.to_unit_dd.value = units[1] if len(units) > 1 else units[0]
         
-        if self.from_unit_dd.page:
-            self.from_unit_dd.page.update()
+        self.from_unit_dd.update()
+        self.to_unit_dd.update()
 
     def _create_btn(self, label: str, btn_type: str = "number", icon: Optional[str] = None, font_size: int = 20, expand: int = 1) -> ft.Container:
         bg_color, text_color = "#1E293B", "#F8FAFC"
@@ -137,11 +138,11 @@ class CalculatorUI:
         ], spacing=6, expand=True, horizontal_alignment=ft.CrossAxisAlignment.STRETCH)
 
     def _build_converter_view(self) -> ft.Column:
+        self._init_converter_components()
         def do_convert(e):
             res = self.on_convert(self.category_dd.value, self.from_unit_dd.value, self.to_unit_dd.value, self.convert_input.value)
             self.convert_result_text.value = f"Hasil: {res}"
-            if self.convert_result_text.page:
-                self.convert_result_text.update()
+            self.convert_result_text.update()
 
         return ft.Column([
             self.category_dd,
@@ -211,28 +212,34 @@ class CalculatorUI:
         ], expand=True, spacing=10, horizontal_alignment=ft.CrossAxisAlignment.STRETCH)
 
     def build_view(self) -> ft.Column:
+        # Lazy Loading: Hanya rakit Tampilan Standar di awal pembukaan aplikasi
+        initial_layout = self._get_calc_layout(self._build_standard_keypad())
+        self.tab_contents[0] = initial_layout
+
         content_area = ft.Container(
-            content=self._get_calc_layout(self._build_standard_keypad()),
+            content=initial_layout,
             expand=True,
             padding=ft.padding.only(top=8)
         )
 
         def on_tab_change(e):
             idx = e.control.selected_index
-            if idx == 0:
-                content_area.content = self._get_calc_layout(self._build_standard_keypad())
-            elif idx == 1:
-                content_area.content = self._get_calc_layout(self._build_scientific_keypad())
-            elif idx == 2:
-                content_area.content = self._build_converter_view()
-            elif idx == 3:
-                content_area.content = self._build_history_view()
+            if idx not in self.tab_contents:
+                if idx == 1:
+                    self.tab_contents[1] = self._get_calc_layout(self._build_scientific_keypad())
+                elif idx == 2:
+                    self.tab_contents[2] = self._build_converter_view()
+                elif idx == 3:
+                    self.tab_contents[3] = self._build_history_view()
+
+            content_area.content = self.tab_contents[idx]
+            if idx == 3:
                 self.update_history_ui(self.history_cache)
             content_area.update()
 
         tabs = ft.Tabs(
             selected_index=0,
-            animation_duration=150,
+            animation_duration=100,
             tabs=[
                 ft.Tab(text="Standar", icon=ft.icons.CALCULATE),
                 ft.Tab(text="Ilmiah", icon=ft.icons.FUNCTIONS),
