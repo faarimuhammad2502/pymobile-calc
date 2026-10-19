@@ -47,49 +47,27 @@ class CalculatorUI:
         # Container Riwayat
         self.history_list = ft.ListView(expand=True, spacing=8, padding=4)
 
-    def _init_converter_components(self):
-        self.category_dd = ft.Dropdown(
-            options=[ft.dropdown.Option(k) for k in self.units_map.keys()],
-            value="Panjang",
-            label="Kategori Konversi",
-            color="#F8FAFC",
-            bgcolor="#161E2E",
-            border_color="#334155",
-            on_change=self._on_category_change
-        )
+    def _create_unit_dropdowns(self, category: str):
+        units = self.units_map.get(category, [])
+        opts = [ft.dropdown.Option(u) for u in units]
         
-        initial_opts = [ft.dropdown.Option(u) for u in self.units_map["Panjang"]]
         self.from_unit_dd = ft.Dropdown(
-            options=initial_opts,
-            value=self.units_map["Panjang"][0],
+            options=opts,
+            value=units[0] if units else None,
             color="#F8FAFC", bgcolor="#161E2E", border_color="#334155", expand=True, label="Dari"
         )
         self.to_unit_dd = ft.Dropdown(
-            options=initial_opts,
-            value=self.units_map["Panjang"][1],
+            options=opts,
+            value=units[1] if len(units) > 1 else (units[0] if units else None),
             color="#F8FAFC", bgcolor="#161E2E", border_color="#334155", expand=True, label="Ke"
         )
-        
-        self.convert_input = ft.TextField(
-            label="Nilai Input", value="1", keyboard_type=ft.KeyboardType.NUMBER,
-            color="#F8FAFC", border_color="#334155", bgcolor="#161E2E"
-        )
-        self.convert_result_text = ft.Text(value="Hasil: -", size=18, weight=ft.FontWeight.BOLD, color="#F59E0B")
+        return [self.from_unit_dd, self.to_unit_dd]
 
     def _on_category_change(self, e):
         cat = self.category_dd.value
-        units = self.units_map.get(cat, [])
-        opts = [ft.dropdown.Option(u) for u in units]
-        
-        self.from_unit_dd.options = opts
-        self.to_unit_dd.options = opts
-        
-        if units:
-            self.from_unit_dd.value = units[0]
-            self.to_unit_dd.value = units[1] if len(units) > 1 else units[0]
-        
-        self.from_unit_dd.update()
-        self.to_unit_dd.update()
+        # Membuat ulang pasangan Dropdown agar tidak terjadi assertion crash di Flutter
+        self.unit_row.controls = self._create_unit_dropdowns(cat)
+        self.unit_row.update()
 
     def _create_btn(self, label: str, btn_type: str = "number", icon: Optional[str] = None, font_size: int = 20, expand: int = 1) -> ft.Container:
         bg_color, text_color = "#1E293B", "#F8FAFC"
@@ -138,7 +116,24 @@ class CalculatorUI:
         ], spacing=6, expand=True, horizontal_alignment=ft.CrossAxisAlignment.STRETCH)
 
     def _build_converter_view(self) -> ft.Column:
-        self._init_converter_components()
+        self.category_dd = ft.Dropdown(
+            options=[ft.dropdown.Option(k) for k in self.units_map.keys()],
+            value="Panjang",
+            label="Kategori Konversi",
+            color="#F8FAFC",
+            bgcolor="#161E2E",
+            border_color="#334155",
+            on_change=self._on_category_change
+        )
+        
+        self.unit_row = ft.Row(controls=self._create_unit_dropdowns("Panjang"), spacing=8)
+        
+        self.convert_input = ft.TextField(
+            label="Nilai Input", value="1", keyboard_type=ft.KeyboardType.NUMBER,
+            color="#F8FAFC", border_color="#334155", bgcolor="#161E2E"
+        )
+        self.convert_result_text = ft.Text(value="Hasil: -", size=18, weight=ft.FontWeight.BOLD, color="#F59E0B")
+
         def do_convert(e):
             res = self.on_convert(self.category_dd.value, self.from_unit_dd.value, self.to_unit_dd.value, self.convert_input.value)
             self.convert_result_text.value = f"Hasil: {res}"
@@ -146,7 +141,7 @@ class CalculatorUI:
 
         return ft.Column([
             self.category_dd,
-            ft.Row([self.from_unit_dd, self.to_unit_dd], spacing=8),
+            self.unit_row,
             self.convert_input,
             ft.Container(
                 content=ft.ElevatedButton("Hitung Konversi", on_click=do_convert, bgcolor="#EA580C", color="#FFFFFF", height=48),
@@ -212,7 +207,6 @@ class CalculatorUI:
         ], expand=True, spacing=10, horizontal_alignment=ft.CrossAxisAlignment.STRETCH)
 
     def build_view(self) -> ft.Column:
-        # Lazy Loading: Hanya rakit Tampilan Standar di awal pembukaan aplikasi
         initial_layout = self._get_calc_layout(self._build_standard_keypad())
         self.tab_contents[0] = initial_layout
 
