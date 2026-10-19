@@ -9,13 +9,13 @@ class CalculatorUI:
         self._init_components()
 
     def _init_components(self):
-        # Display Layar Utama (Lebar Penuh)
+        # Display Layar Utama
         self.expression_display = ft.Text(
-            value="", color="#94A3B8", size=18, text_align=ft.TextAlign.RIGHT,
+            value="", color="#94A3B8", size=16, text_align=ft.TextAlign.RIGHT,
             max_lines=1, overflow=ft.TextOverflow.ELLIPSIS
         )
         self.result_display = ft.Text(
-            value="0", color="#F8FAFC", size=48, weight=ft.FontWeight.BOLD,
+            value="0", color="#F8FAFC", size=44, weight=ft.FontWeight.BOLD,
             text_align=ft.TextAlign.RIGHT, max_lines=1, overflow=ft.TextOverflow.CLIP
         )
         self.display_container = ft.Container(
@@ -23,17 +23,17 @@ class CalculatorUI:
                 controls=[self.expression_display, self.result_display],
                 alignment=ft.MainAxisAlignment.END,
                 horizontal_alignment=ft.CrossAxisAlignment.END,
-                spacing=4,
+                spacing=2,
             ),
-            padding=ft.padding.symmetric(horizontal=20, vertical=16),
+            padding=ft.padding.symmetric(horizontal=16, vertical=12),
             bgcolor="#161E2E",
-            border_radius=20,
+            border_radius=18,
             border=ft.border.all(1, "#1E293B"),
             shadow=ft.BoxShadow(spread_radius=0, blur_radius=12, color="#050811", offset=ft.Offset(0, 4)),
-            height=150,
+            height=130,
         )
 
-        # Elemen Konverter
+        # Dropdowns Konverter
         self.category_dd = ft.Dropdown(
             options=[
                 ft.dropdown.Option("Panjang"),
@@ -55,7 +55,7 @@ class CalculatorUI:
             label="Nilai Input", value="1", keyboard_type=ft.KeyboardType.NUMBER,
             color="#F8FAFC", border_color="#334155", bgcolor="#161E2E"
         )
-        self.convert_result_text = ft.Text(value="Hasil: -", size=20, weight=ft.FontWeight.BOLD, color="#F59E0B")
+        self.convert_result_text = ft.Text(value="Hasil: -", size=18, weight=ft.FontWeight.BOLD, color="#F59E0B")
         self._update_unit_options("Panjang")
 
         # Container Riwayat
@@ -72,12 +72,15 @@ class CalculatorUI:
         opts = [ft.dropdown.Option(u) for u in units.get(category, [])]
         self.from_unit_dd.options = opts
         self.to_unit_dd.options = opts
-        self.from_unit_dd.value = units[category][0]
-        self.to_unit_dd.value = units[category][1]
+        if units.get(category):
+            self.from_unit_dd.value = units[category][0]
+            self.to_unit_dd.value = units[category][1] if len(units[category]) > 1 else units[category][0]
 
     def _on_category_change(self, e):
         self._update_unit_options(self.category_dd.value)
-        self.category_dd.page.update()
+        if self.from_unit_dd.page:
+            self.from_unit_dd.update()
+            self.to_unit_dd.update()
 
     def _create_btn(self, label: str, btn_type: str = "number", icon: Optional[str] = None, font_size: int = 20, expand: int = 1) -> ft.Container:
         bg_color, text_color = "#1E293B", "#F8FAFC"
@@ -99,7 +102,7 @@ class CalculatorUI:
             content=content,
             alignment=ft.alignment.center,
             bgcolor=bg_color,
-            border_radius=16,
+            border_radius=14,
             expand=expand,
             on_click=lambda e: self.on_button_press(label),
             ink=True,
@@ -107,16 +110,16 @@ class CalculatorUI:
 
     def _build_standard_keypad(self) -> ft.Column:
         return ft.Column([
-            ft.Row([self._create_btn("C", "action"), self._create_btn("DEL", "action", icon="backspace"), self._create_btn("%", "action"), self._create_btn("÷", "operator")], spacing=10, expand=True),
-            ft.Row([self._create_btn("7"), self._create_btn("8"), self._create_btn("9"), self._create_btn("×", "operator")], spacing=10, expand=True),
-            ft.Row([self._create_btn("4"), self._create_btn("5"), self._create_btn("6"), self._create_btn("-", "operator")], spacing=10, expand=True),
-            ft.Row([self._create_btn("1"), self._create_btn("2"), self._create_btn("3"), self._create_btn("+", "operator")], spacing=10, expand=True),
-            ft.Row([self._create_btn("+/-", "action"), self._create_btn("0"), self._create_btn("."), self._create_btn("=", "equal")], spacing=10, expand=True),
-        ], spacing=10, expand=True, horizontal_alignment=ft.CrossAxisAlignment.STRETCH)
+            ft.Row([self._create_btn("C", "action"), self._create_btn("DEL", "action", icon="backspace"), self._create_btn("%", "action"), self._create_btn("÷", "operator")], spacing=8, expand=True),
+            ft.Row([self._create_btn("7"), self._create_btn("8"), self._create_btn("9"), self._create_btn("×", "operator")], spacing=8, expand=True),
+            ft.Row([self._create_btn("4"), self._create_btn("5"), self._create_btn("6"), self._create_btn("-", "operator")], spacing=8, expand=True),
+            ft.Row([self._create_btn("1"), self._create_btn("2"), self._create_btn("3"), self._create_btn("+", "operator")], spacing=8, expand=True),
+            ft.Row([self._create_btn("+/-", "action"), self._create_btn("0"), self._create_btn("."), self._create_btn("=", "equal")], spacing=8, expand=True),
+        ], spacing=8, expand=True, horizontal_alignment=ft.CrossAxisAlignment.STRETCH)
 
     def _build_scientific_keypad(self) -> ft.Column:
         return ft.Column([
-            ft.Row([self._create_btn("sin", "sci", font_size=14), self._create_btn("cos", "sci", font_size=14), self._create_btn("tan", "sci", font_size=14), self._create_btn("log", "sci", font_size=14), self._create_btn("ln", "sci", font_size=14)], spacing=6, expand=True),
+            ft.Row([self._create_btn("sin", "sci", font_size=13), self._create_btn("cos", "sci", font_size=13), self._create_btn("tan", "sci", font_size=13), self._create_btn("log", "sci", font_size=13), self._create_btn("ln", "sci", font_size=13)], spacing=6, expand=True),
             ft.Row([self._create_btn("√", "sci"), self._create_btn("^", "sci"), self._create_btn("π", "sci"), self._create_btn("e", "sci"), self._create_btn("!", "sci")], spacing=6, expand=True),
             ft.Row([self._create_btn("(", "sci"), self._create_btn(")", "sci"), self._create_btn("C", "action"), self._create_btn("DEL", "action", icon="backspace"), self._create_btn("÷", "operator")], spacing=6, expand=True),
             ft.Row([self._create_btn("7"), self._create_btn("8"), self._create_btn("9"), self._create_btn("%", "action"), self._create_btn("×", "operator")], spacing=6, expand=True),
@@ -129,7 +132,8 @@ class CalculatorUI:
         def do_convert(e):
             res = self.on_convert(self.category_dd.value, self.from_unit_dd.value, self.to_unit_dd.value, self.convert_input.value)
             self.convert_result_text.value = f"Hasil: {res}"
-            self.convert_result_text.page.update()
+            if self.convert_result_text.page:
+                self.convert_result_text.update()
 
         return ft.Column([
             self.category_dd,
@@ -175,38 +179,36 @@ class CalculatorUI:
                         bgcolor="#161E2E", padding=12, border_radius=12, border=ft.border.all(1, "#1E293B")
                     )
                 )
+        if self.history_list.page:
+            self.history_list.update()
 
     def update_display(self, expression: str, result: str):
         self.expression_display.value = expression
         self.result_display.value = result
         val_len = len(result)
-        if val_len > 13: self.result_display.size = 28
-        elif val_len > 8: self.result_display.size = 36
-        else: self.result_display.size = 48
+        if val_len > 13: self.result_display.size = 26
+        elif val_len > 8: self.result_display.size = 34
+        else: self.result_display.size = 44
         self.result_display.color = "#EF4444" if "Error" in result else "#F8FAFC"
+        if self.expression_display.page:
+            self.expression_display.update()
+            self.result_display.update()
 
     def _get_calc_layout(self, keypad_widget):
         return ft.Column([
             self.display_container,
             ft.Divider(height=1, color="#1E293B"),
             ft.Container(content=keypad_widget, expand=True)
-        ], expand=True, spacing=12, horizontal_alignment=ft.CrossAxisAlignment.STRETCH)
+        ], expand=True, spacing=10, horizontal_alignment=ft.CrossAxisAlignment.STRETCH)
 
     def build_view(self) -> ft.Column:
-        tabs = ft.Tabs(
-            selected_index=0,
-            animation_duration=200,
-            tabs=[
-                ft.Tab(text="Standar", icon=ft.icons.CALCULATE),
-                ft.Tab(text="Ilmiah", icon=ft.icons.FUNCTIONS),
-                ft.Tab(text="Konversi", icon=ft.icons.SWAP_HORIZ),
-                ft.Tab(text="Riwayat", icon=ft.icons.HISTORY),
-            ],
-            expand=False
-        )
+        self.std_layout = self._get_calc_layout(self._build_standard_keypad())
+        self.sci_layout = self._get_calc_layout(self._build_scientific_keypad())
+        self.conv_layout = self._build_converter_view()
+        self.hist_layout = self._build_history_view()
 
         content_area = ft.Container(
-            content=self._get_calc_layout(self._build_standard_keypad()),
+            content=self.std_layout,
             expand=True,
             padding=ft.padding.only(top=8)
         )
@@ -214,16 +216,27 @@ class CalculatorUI:
         def on_tab_change(e):
             idx = e.control.selected_index
             if idx == 0:
-                content_area.content = self._get_calc_layout(self._build_standard_keypad())
+                content_area.content = self.std_layout
             elif idx == 1:
-                content_area.content = self._get_calc_layout(self._build_scientific_keypad())
+                content_area.content = self.sci_layout
             elif idx == 2:
-                content_area.content = self._build_converter_view()
+                content_area.content = self.conv_layout
             elif idx == 3:
-                content_area.content = self._build_history_view()
+                content_area.content = self.hist_layout
             content_area.update()
 
-        tabs.on_change = on_tab_change
+        tabs = ft.Tabs(
+            selected_index=0,
+            animation_duration=150,
+            tabs=[
+                ft.Tab(text="Standar", icon=ft.icons.CALCULATE),
+                ft.Tab(text="Ilmiah", icon=ft.icons.FUNCTIONS),
+                ft.Tab(text="Konversi", icon=ft.icons.SWAP_HORIZ),
+                ft.Tab(text="Riwayat", icon=ft.icons.HISTORY),
+            ],
+            on_change=on_tab_change,
+            expand=False
+        )
 
         return ft.Column([
             tabs,

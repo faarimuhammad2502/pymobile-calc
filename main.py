@@ -7,7 +7,8 @@ def main(page: ft.Page):
     try:
         page.title = "CALCULATE"
         page.bgcolor = "#0B0F19"
-        page.padding = 12
+        # Jarak aman top=42 agar menu tidak mentok ke status bar / notch HP
+        page.padding = ft.padding.only(top=42, left=12, right=12, bottom=12)
         page.vertical_alignment = ft.MainAxisAlignment.START
         page.horizontal_alignment = ft.CrossAxisAlignment.STRETCH
 
@@ -17,9 +18,12 @@ def main(page: ft.Page):
             try:
                 calc_logic.process_input(label)
                 exp, res = calc_logic.get_display()
+                # Update tampilan teks saja agar sangat cepat dan tidak lag
                 calc_ui.update_display(exp, res)
-                calc_ui.update_history_ui(calc_logic.history)
-                page.update()
+                
+                # Hanya perbarui riwayat saat menekan '=' atau fungsi ilmiah
+                if label == "=" or label in ["sin", "cos", "tan", "log", "ln", "√", "!"]:
+                    calc_ui.update_history_ui(calc_logic.history)
             except Exception as e:
                 print("Error:", e)
 
@@ -29,7 +33,6 @@ def main(page: ft.Page):
         def handle_clear_history():
             calc_logic.clear_history()
             calc_ui.update_history_ui(calc_logic.history)
-            page.update()
 
         calc_ui = CalculatorUI(
             on_button_press=handle_button_click,
