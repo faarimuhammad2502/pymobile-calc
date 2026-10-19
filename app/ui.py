@@ -103,7 +103,7 @@ class CalculatorUI:
             ink=True,
         )
 
-    def _build_standard_keypad((self) -> ft.Column:
+    def _build_standard_keypad(self) -> ft.Column:
         return ft.Column([
             ft.Row([self._create_btn("C", "action"), self._create_btn("DEL", "action", icon="backspace"), self._create_btn("%", "action"), self._create_btn("÷", "operator")], spacing=8),
             ft.Row([self._create_btn("7"), self._create_btn("8"), self._create_btn("9"), self._create_btn("×", "operator")], spacing=8),
