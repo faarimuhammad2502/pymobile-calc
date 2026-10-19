@@ -7,7 +7,7 @@ def main(page: ft.Page):
     try:
         page.title = "CALCULATE"
         page.bgcolor = "#0B0F19"
-        page.padding = 16
+        page.padding = 12
         page.vertical_alignment = ft.MainAxisAlignment.START
         page.horizontal_alignment = ft.CrossAxisAlignment.STRETCH
 
@@ -18,13 +18,25 @@ def main(page: ft.Page):
                 calc_logic.process_input(label)
                 exp, res = calc_logic.get_display()
                 calc_ui.update_display(exp, res)
+                calc_ui.update_history_ui(calc_logic.history)
                 page.update()
             except Exception as e:
-                print("Error hitung:", e)
+                print("Error:", e)
 
-        calc_ui = CalculatorUI(on_button_press=handle_button_click)
-        
-        # Memasang antarmuka kalkulator full width
+        def handle_convert(category, from_u, to_u, val_str):
+            return calc_logic.convert_units(category, from_u, to_u, val_str)
+
+        def handle_clear_history():
+            calc_logic.clear_history()
+            calc_ui.update_history_ui(calc_logic.history)
+            page.update()
+
+        calc_ui = CalculatorUI(
+            on_button_press=handle_button_click,
+            on_convert=handle_convert,
+            on_clear_history=handle_clear_history
+        )
+
         page.add(calc_ui.build_view())
         page.update()
 
