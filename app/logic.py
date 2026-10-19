@@ -97,27 +97,33 @@ class CalculatorLogic:
         try:
             val = float(val_str)
             if category == "Suhu":
-                # Convert from_u to Celsius
                 if "Celsius" in from_u: c = val
                 elif "Fahrenheit" in from_u: c = (val - 32) * 5/9
                 elif "Kelvin" in from_u: c = val - 273.15
                 
-                # Convert Celsius to to_u
                 if "Celsius" in to_u: res = c
                 elif "Fahrenheit" in to_u: res = (c * 9/5) + 32
                 elif "Kelvin" in to_u: res = c + 273.15
 
             elif category == "Panjang":
-                # Base: Meter
                 to_m = {"Meter (m)": 1, "Kilometer (km)": 1000, "Centimeter (cm)": 0.01, "Millimeter (mm)": 0.001, "Inch (in)": 0.0254, "Feet (ft)": 0.3048}
                 m = val * to_m.get(from_u, 1)
                 res = m / to_m.get(to_u, 1)
 
             elif category == "Massa / Berat":
-                # Base: Gram
                 to_g = {"Kilogram (kg)": 1000, "Gram (g)": 1, "Milligram (mg)": 0.001, "Pound (lbs)": 453.592}
                 g = val * to_g.get(from_u, 1)
                 res = g / to_g.get(to_u, 1)
+
+            elif category == "Waktu":
+                to_s = {"Detik (s)": 1, "Menit (min)": 60, "Jam (h)": 3600, "Hari (d)": 86400}
+                s = val * to_s.get(from_u, 1)
+                res = s / to_s.get(to_u, 1)
+
+            elif category == "Mata Uang":
+                to_idr = {"Rupiah (IDR)": 1, "US Dollar (USD)": 15600, "Euro (EUR)": 16800, "Yen (JPY)": 102, "SGD (S$)": 11800}
+                idr = val * to_idr.get(from_u, 1)
+                res = idr / to_idr.get(to_u, 1)
 
             return f"{res:.6g}"
         except Exception:
