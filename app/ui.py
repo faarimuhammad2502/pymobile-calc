@@ -6,6 +6,16 @@ class CalculatorUI:
         self.on_button_press = on_button_press
         self.on_convert = on_convert
         self.on_clear_history = on_clear_history
+        self.history_cache = []
+        
+        # Peta Kategori & Satuan Konversi
+        self.units_map = {
+            "Panjang": ["Meter (m)", "Kilometer (km)", "Centimeter (cm)", "Millimeter (mm)", "Inch (in)", "Feet (ft)"],
+            "Massa / Berat": ["Kilogram (kg)", "Gram (g)", "Milligram (mg)", "Pound (lbs)"],
+            "Waktu": ["Detik (s)", "Menit (min)", "Jam (h)", "Hari (d)"],
+            "Suhu": ["Celsius (°C)", "Fahrenheit (°F)", "Kelvin (K)"],
+            "Mata Uang": ["Rupiah (IDR)", "US Dollar (USD)", "Euro (EUR)", "Yen (JPY)", "SGD (S$)"]
+        }
         self._init_components()
 
     def _init_components(self):
@@ -35,13 +45,7 @@ class CalculatorUI:
 
         # Dropdowns Konverter
         self.category_dd = ft.Dropdown(
-            options=[
-                ft.dropdown.Option("Panjang"),
-                ft.dropdown.Option("Massa / Berat"),
-                ft.dropdown.Option("Waktu"),
-                ft.dropdown.Option("Suhu"),
-                ft.dropdown.Option("Mata Uang"),
-            ],
+            options=[ft.dropdown.Option(k) for k in self.units_map.keys()],
             value="Panjang",
             label="Kategori Konversi",
             color="#F8FAFC",
@@ -49,38 +53,42 @@ class CalculatorUI:
             border_color="#334155",
             on_change=self._on_category_change
         )
-        self.from_unit_dd = ft.Dropdown(color="#F8FAFC", bgcolor="#161E2E", border_color="#334155", expand=True, label="Dari")
-        self.to_unit_dd = ft.Dropdown(color="#F8FAFC", bgcolor="#161E2E", border_color="#334155", expand=True, label="Ke")
+        
+        initial_opts = [ft.dropdown.Option(u) for u in self.units_map["Panjang"]]
+        self.from_unit_dd = ft.Dropdown(
+            options=initial_opts,
+            value=self.units_map["Panjang"][0],
+            color="#F8FAFC", bgcolor="#161E2E", border_color="#334155", expand=True, label="Dari"
+        )
+        self.to_unit_dd = ft.Dropdown(
+            options=initial_opts,
+            value=self.units_map["Panjang"][1],
+            color="#F8FAFC", bgcolor="#161E2E", border_color="#334155", expand=True, label="Ke"
+        )
+        
         self.convert_input = ft.TextField(
             label="Nilai Input", value="1", keyboard_type=ft.KeyboardType.NUMBER,
             color="#F8FAFC", border_color="#334155", bgcolor="#161E2E"
         )
         self.convert_result_text = ft.Text(value="Hasil: -", size=18, weight=ft.FontWeight.BOLD, color="#F59E0B")
-        self._update_unit_options("Panjang")
 
         # Container Riwayat
         self.history_list = ft.ListView(expand=True, spacing=8, padding=4)
 
-    def _update_unit_options(self, category: str):
-        units = {
-            "Panjang": ["Meter (m)", "Kilometer (km)", "Centimeter (cm)", "Millimeter (mm)", "Inch (in)", "Feet (ft)"],
-            "Massa / Berat": ["Kilogram (kg)", "Gram (g)", "Milligram (mg)", "Pound (lbs)"],
-            "Waktu": ["Detik (s)", "Menit (min)", "Jam (h)", "Hari (d)"],
-            "Suhu": ["Celsius (°C)", "Fahrenheit (°F)", "Kelvin (K)"],
-            "Mata Uang": ["Rupiah (IDR)", "US Dollar (USD)", "Euro (EUR)", "Yen (JPY)", "SGD (S$)"]
-        }
-        opts = [ft.dropdown.Option(u) for u in units.get(category, [])]
+    def _on_category_change(self, e):
+        cat = self.category_dd.value
+        units = self.units_map.get(cat, [])
+        opts = [ft.dropdown.Option(u) for u in units]
+        
         self.from_unit_dd.options = opts
         self.to_unit_dd.options = opts
-        if units.get(category):
-            self.from_unit_dd.value = units[category][0]
-            self.to_unit_dd.value = units[category][1] if len(units[category]) > 1 else units[category][0]
-
-    def _on_category_change(self, e):
-        self._update_unit_options(self.category_dd.value)
+        
+        if units:
+            self.from_unit_dd.value = units[0]
+            self.to_unit_dd.value = units[1] if len(units) > 1 else units[0]
+        
         if self.from_unit_dd.page:
-            self.from_unit_dd.update()
-            self.to_unit_dd.update()
+            self.from_unit_dd.page.update()
 
     def _create_btn(self, label: str, btn_type: str = "number", icon: Optional[str] = None, font_size: int = 20, expand: int = 1) -> ft.Container:
         bg_color, text_color = "#1E293B", "#F8FAFC"
@@ -165,6 +173,7 @@ class CalculatorUI:
         ], expand=True, horizontal_alignment=ft.CrossAxisAlignment.STRETCH)
 
     def update_history_ui(self, history_data: list):
+        self.history_cache = history_data
         self.history_list.controls.clear()
         if not history_data:
             self.history_list.controls.append(ft.Text("Belum ada riwayat", color="#64748B"))
@@ -186,9 +195,9 @@ class CalculatorUI:
         self.expression_display.value = expression
         self.result_display.value = result
         val_len = len(result)
-        if val_len > 13: self.result_display.size = 26
-        elif val_len > 8: self.result_display.size = 34
-        else: self.result_display.size = 44
+        if val_len > 13: self.result_display.size = 28
+        elif val_len > 8: self.result_display.size = 36
+        else: self.result_display.size = 48
         self.result_display.color = "#EF4444" if "Error" in result else "#F8FAFC"
         if self.expression_display.page:
             self.expression_display.update()
@@ -202,13 +211,8 @@ class CalculatorUI:
         ], expand=True, spacing=10, horizontal_alignment=ft.CrossAxisAlignment.STRETCH)
 
     def build_view(self) -> ft.Column:
-        self.std_layout = self._get_calc_layout(self._build_standard_keypad())
-        self.sci_layout = self._get_calc_layout(self._build_scientific_keypad())
-        self.conv_layout = self._build_converter_view()
-        self.hist_layout = self._build_history_view()
-
         content_area = ft.Container(
-            content=self.std_layout,
+            content=self._get_calc_layout(self._build_standard_keypad()),
             expand=True,
             padding=ft.padding.only(top=8)
         )
@@ -216,13 +220,14 @@ class CalculatorUI:
         def on_tab_change(e):
             idx = e.control.selected_index
             if idx == 0:
-                content_area.content = self.std_layout
+                content_area.content = self._get_calc_layout(self._build_standard_keypad())
             elif idx == 1:
-                content_area.content = self.sci_layout
+                content_area.content = self._get_calc_layout(self._build_scientific_keypad())
             elif idx == 2:
-                content_area.content = self.conv_layout
+                content_area.content = self._build_converter_view()
             elif idx == 3:
-                content_area.content = self.hist_layout
+                content_area.content = self._build_history_view()
+                self.update_history_ui(self.history_cache)
             content_area.update()
 
         tabs = ft.Tabs(
